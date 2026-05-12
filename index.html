@@ -3,16 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Egg of Pi World</title>
+    <title>Egg of Pi World - Payment</title>
     <script src="https://minepi.com"></script>
 </head>
 <body style="background: linear-gradient(135deg, #0f0c29, #302b63, #24243e); color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0;">
-    <div style="text-align: center; padding: 40px; background: rgba(255,255,255,0.1); border-radius: 24px; border: 1px solid rgba(255,255,255,0.2);">
-        <h1>🥚 Egg of Pi World</h1>
-        <p>보라색 화면이 나오면 성공입니다!</p>
-        <button id="pay-btn" style="padding: 15px 30px; font-size: 18px; background: #667eea; border: none; border-radius: 12px; color: white; cursor: pointer;">
-            π 1 Test Pi 결제하기
-        </button>
+    <div style="text-align: center; padding: 40px; background: rgba(255,255,255,0.1); border-radius: 24px; border: 1px solid rgba(255,255,255,0.2); max-width: 400px; width: 90%;">
+        <div style="font-size: 50px; margin-bottom: 10px;">🥚</div>
+        <h1 style="margin: 0 0 10px 0;">Egg of Pi World</h1>
+        <p id="status-text" style="color: #51cf66; font-size: 14px;">✅ 시스템 준비 완료</p>
+        
+        <div style="background: rgba(102,126,234,0.2); padding: 20px; border-radius: 16px; margin: 20px 0;">
+            <p style="margin: 0 0 15px 0; font-size: 14px; color: #ccc;">테스트 결제 (1 Test Pi)</p>
+            <button id="pay-btn" style="width: 100%; padding: 15px; font-size: 18px; font-weight: bold; background: linear-gradient(135deg, #667eea, #764ba2); border: none; border-radius: 12px; color: white; cursor: pointer;">
+                π 1 Test Pi 결제하기
+            </button>
+        </div>
+        <p style="font-size: 12px; color: rgba(255,255,255,0.5);">반드시 Pi Browser에서 실행하세요.</p>
     </div>
+
+    <script>
+        const Pi = window.Pi;
+        Pi.init({ version: "2.0", sandbox: true });
+
+        async function handlePayment() {
+            try {
+                const statusLabel = document.getElementById('status-text');
+                statusLabel.innerText = "⏳ 결제창 여는 중...";
+
+                const paymentData = {
+                    amount: 1,
+                    memo: "Egg of Pi World Test Payment",
+                    metadata: { type: "test-payment" }
+                };
+
+                const callbacks = {
+                    onReadyForServerApproval: (paymentId) => {
+                        statusLabel.innerText = "📡 서버 승인 요청 중 (ID: " + paymentId.substring(0,8) + "...)";
+                        // 테스트 환경에서는 이 단계에서 다음으로 넘어갑니다.
+                    },
+                    onReadyForServerCompletion: (paymentId, txid) => {
+                        statusLabel.innerText = "🎉 결제 완료!";
+                        alert("🎉 결제가 성공적으로 완료되었습니다!\nTXID: " + txid.substring(0,10) + "...");
+                    },
+                    onCancel: (paymentId) => { 
+                        statusLabel.innerText = "❌ 결제 취소됨"; 
+                    },
+                    onError: (error, payment) => { 
+                        statusLabel.innerText = "⚠️ 에러 발생"; 
+                        console.error(error); 
+                    }
+                };
+
+                await Pi.createPayment(paymentData, callbacks);
+            } catch (err) {
+                console.error(err);
+                alert("결제창을 열 수 없습니다. Pi Browser에서 접속했는지 확인하세요.");
+            }
+        }
+
+        document.getElementById('pay-btn').addEventListener('click', handlePayment);
+    </script>
 </body>
 </html>
